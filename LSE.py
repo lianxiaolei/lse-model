@@ -60,7 +60,7 @@ class LSEModel:
         negative_log_likehood = - np.sum(y * np.log(probability) + (1 - y) * np.log(1 - probability)) + \
                                 lbd * (np.sum(np.dot(question_vec, question_vec.T)) +
                                        np.sum(np.dot(student_vec, student_vec.T)))
-        print(negative_log_likehood)
+        # print(negative_log_likehood)
 
         if not with_gradient:
             return negative_log_likehood
@@ -107,6 +107,9 @@ class LSEModel:
                                       ('gradient_a', gradient_a),
                                       ('gradient_gm_s', gradient_gm_s),
                                       ('gradient_gm_q', gradient_gm_q)]))
+
+        print(gradient_s.shape)
+
         return lost, gradient_vec
 
     def auxiliary_s(self, x, question_vec, gm_q, y, lbd, _dict, with_gradient=True):
@@ -133,6 +136,7 @@ class LSEModel:
         _dict = OrderedDict()
         cursor = 0
         for var_name, var_value in tensors.items():
+            print(var_name, var_value.shape, var_value.size)
             _dict[var_name] = {
                 'index_start': cursor,
                 'index_end': cursor + var_value.size,
@@ -248,9 +252,9 @@ if __name__ == '__main__':
 
     lse = LSEModel()
 
-    m = 100
+    m = 10
     n = 10
-    k = 30
+    k = 60
     s = np.random.normal(1.5, 1.5, (m, k))
     s[s < 0.0001] = 0.0001
     a = np.random.normal(1.5, 1.5, (k, n))
