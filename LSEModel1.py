@@ -65,15 +65,21 @@ class LSEModel:
         gradient_s = -np.dot(delta_y_p, (a / norm_a).T) + (2 * lbd) * s
         gradient_gm_s = -(delta_y_p).sum(axis=1).reshape(-1, 1)
         gradient_gm_q = -(delta_y_p).sum(axis=0).reshape(1, -1)
+
         # caculate gradient for a,need array shape like (s,q,k)
         num_students, num_questions = dots.shape
         embedding_dimension = s.shape[1]
+
         dots_3 = dots.reshape(num_students, num_questions, 1)
         norm_3 = norm_a.reshape(1, num_questions, 1)
+
         s_3 = s.reshape(num_students, 1, embedding_dimension)
         a_3 = a.T.reshape(1, num_questions, embedding_dimension)
-        gradient_a = -np.einsum('sq,sqk->kq', delta_y_p, s_3 / norm_3 - (dots_3 / (norm_3 ** 2) + 1) * a_3 / norm_3) + (
-                    2 * lbd) * a
+
+        gradient_a = -np.einsum('sq,sqk->kq',
+                                delta_y_p,
+                                s_3 / norm_3 - (dots_3 / (norm_3 ** 2) + 1) * a_3 / norm_3) + (2 * lbd) * a
+
         return l, gradient_s, gradient_a, gradient_gm_s, gradient_gm_q
 
     def gradient(self, s, a, gms, gmq, y, lbd):
@@ -118,8 +124,9 @@ class LSEModel:
         '''
 
         s, a, gm_s, gm_q = (
-        x[_dict[var_name]['index_start']:_dict[var_name]['index_end']].reshape(_dict[var_name]['shape']) for var_name in
-        _dict)
+            x[_dict[var_name]['index_start']:_dict[var_name]['index_end']].reshape(_dict[var_name]['shape']) for
+        var_name in
+            _dict)
         return s, a, gm_s, gm_q
 
     def shrink_s(self, x, _dict):

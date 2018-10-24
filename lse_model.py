@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Lesson Gain for Student"""
+
 from collections import OrderedDict
 import numpy as np
 import numpy.linalg as llg

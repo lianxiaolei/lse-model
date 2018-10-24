@@ -66,21 +66,27 @@ class LSEModel:
             return negative_log_likehood
         # caculate gradient
         delta_y_p = y - probability
-        gradient_s = -np.dot(delta_y_p, (question_vec / norm_a).T) + (2 * lbd) * student_vec
+
+        # gradient_s = -np.dot(delta_y_p, probability.T).dot(1 - probability)
+        # gradient_s = gradient_s.dot((question_vec / norm_a).T) + (2 * lbd) * student_vec
+        gradient_s = -np.dot(delta_y_p, (question_vec / norm_a).T) + (2 * lbd) * student_vec  # dL/dθ 简化之后的结果
+
         gradient_gm_s = -(delta_y_p).sum(axis=1).reshape(-1, 1)
         gradient_gm_q = -(delta_y_p).sum(axis=0).reshape(1, -1)
+
         # caculate gradient for a,need array shape like (s,q,k)
         num_students, num_questions = dots.shape
         embedding_dimension = student_vec.shape[1]
+
         dots_3 = dots.reshape(num_students, num_questions, 1)
         norm_3 = norm_a.reshape(1, num_questions, 1)
+
         student_vec_3 = student_vec.reshape(num_students, 1, embedding_dimension)
         question_vec_3 = question_vec.T.reshape(1, num_questions, embedding_dimension)
 
         gradient_a = -np.einsum(
             'sq,sqk->kq', delta_y_p,
             student_vec_3 / norm_3 - (dots_3 / (norm_3 ** 2) + 1) * question_vec_3 / norm_3) + (2 * lbd) * question_vec
-        print(gradient_a)
 
         return negative_log_likehood, gradient_s, gradient_a, gradient_gm_s, gradient_gm_q
 
@@ -150,10 +156,6 @@ class LSEModel:
         low_bound = np.zeros(xlen)
         up_bound = np.zeros(xlen)
         for varname, varvalue in _dict.items():
-            # for tmp in range(low_bound.size):
-            #     if _dict[varname]['index_start'] <= tmp <= _dict[varname]['index_end']:
-            #         print bounds[varname]['low']
-
             low_bound = [bounds[varname]['low'] if _dict[varname]['index_start'] <= tmp <= _dict[varname]['index_end']
                          else low_bound[tmp] for tmp in range(len(low_bound))]
             up_bound = [bounds[varname]['up'] if _dict[varname]['index_start'] <= tmp <= _dict[varname]['index_end']
@@ -163,35 +165,8 @@ class LSEModel:
         up_bound = [None if bnd == np.inf else bnd for bnd in up_bound]
 
         bound = list(zip(low_bound, up_bound))
-        # print(bound)
-        return bound
 
-    # def set_bounds_all1(self, xlen, _dict, slow, sup, alow, aup, gslow, gsup, gqlow, gqup):
-    #     '''
-    #     设置参数的边界
-    #     '''
-    #     low_bound = np.zeros(xlen)
-    #     up_bound = np.zeros(xlen)
-    #     low_bound[_dict['s']['index_start']: _dict['s']['index_end']] = slow
-    #     up_bound[_dict['s']['index_start']: _dict['s']['index_end']] = sup
-    #
-    #     low_bound[_dict['a']['index_start']: _dict['a']['index_end']] = alow
-    #     up_bound[_dict['a']['index_start']: _dict['a']['index_end']] = aup
-    #
-    #     low_bound[_dict['gm_s']['index_start']: _dict['gm_s']['index_end']] = gslow
-    #     up_bound[_dict['gm_s']['index_start']: _dict['gm_s']['index_end']] = gsup
-    #
-    #     low_bound[_dict['gm_q']['index_start']: _dict['gm_q']['index_end']] = gqlow
-    #     up_bound[_dict['gm_q']['index_start']: _dict['gm_q']['index_end']] = gqup
-    #
-    #     low_bound = low_bound.tolist()
-    #     up_bound = up_bound.tolist()
-    #
-    #     low_bound = [None if bnd == -np.inf else bnd for bnd in low_bound]
-    #     up_bound = [None if bnd == np.inf else bnd for bnd in up_bound]
-    #
-    #     bound = zip(low_bound, up_bound)
-    #     return bound
+        return bound
 
     def init_params(self, num_students, num_questions, dimension):
 
