@@ -52,7 +52,7 @@ class Lse(object):
         :return:
         """
         return s.dot(a) / self.calc_norm(a, axis=0) \
-            - self.calc_norm(a, axis=0) + gms + gma
+               - self.calc_norm(a, axis=0) + gms + gma
 
     def _calc_delta_vec(self):
         """
@@ -60,7 +60,7 @@ class Lse(object):
         :return:
         """
         self.s.dot(self.a) / self.calc_norm(self.a, axis=0) \
-            - self.calc_norm(self.a, axis=0) + self.gms + self.gma
+        - self.calc_norm(self.a, axis=0) + self.gms + self.gma
 
     def calc_prob(self, delta_vec):
         """
@@ -79,8 +79,8 @@ class Lse(object):
         R = self.calc_prob(delta)
 
         negative_log_likehood = - y * np.log(R) + (1 - y) * np.log(1 - R) + \
-              lbd * (np.sum(student_vec.dot(student_vec.T)) +
-                     np.sum(student_vec.dot(student_vec.T)))  # add the L2 regularzation
+                                lbd * (np.sum(student_vec.dot(student_vec.T)) +
+                                       np.sum(student_vec.dot(student_vec.T)))  # add the L2 regularzation
 
         if not with_gradient:
             return negative_log_likehood
@@ -88,3 +88,5 @@ class Lse(object):
         error = y - R
         gradient_s = error * question_vec / norm_a + 2 * lbd * student_vec
 
+        gradient_gm_s = -error.sum(axis=1).reshape(-1, 1)
+        gradient_gm_q = -error.sum(axis=0).reshape(1, -1)
